@@ -1,0 +1,123 @@
+<%- include('partials/header') %>
+
+<div class="history-page">
+  <div class="page-header-actions">
+    <div class="search-filter-bar">
+      <div class="search-input-wrapper">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="historySearchInput" class="form-control" placeholder="Search history by job name..." />
+      </div>
+
+      <div class="filter-group">
+        <select id="historyJobFilter" class="form-control">
+          <option value="">All Jobs</option>
+          <% jobs.forEach(job => { %>
+            <option value="<%= job.id %>" <%= selectedJobId === job.id ? 'selected' : '' %>><%= job.name %></option>
+          <% }) %>
+        </select>
+
+        <select id="historyStatusFilter" class="form-control">
+          <option value="">All Statuses</option>
+          <option value="success" <%= selectedStatus === 'success' ? 'selected' : '' %>>Success Only</option>
+          <option value="partial" <%= selectedStatus === 'partial' ? 'selected' : '' %>>Partial (With Errors)</option>
+          <option value="failed" <%= selectedStatus === 'failed' ? 'selected' : '' %>>Failed</option>
+          <option value="stopped" <%= selectedStatus === 'stopped' ? 'selected' : '' %>>Stopped</option>
+        </select>
+      </div>
+    </div>
+
+    <% if (history.length > 0) { %>
+      <button type="button" class="btn btn-ghost btn-sm text-danger" id="clearAllHistoryBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        <span>Clear History</span>
+      </button>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <div class="card-body p-0">
+      <% if (history.length === 0) { %>
+        <div class="empty-state">
+          <div class="empty-state-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <h3>No Execution History</h3>
+          <p>Execution logs and statistics will automatically be recorded here whenever a transfer job runs.</p>
+        </div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="table" id="historyTable">
+            <thead>
+              <tr>
+                <th>Job Name & Mode</th>
+                <th>Executed At</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Files (Copied / Total)</th>
+                <th>Data Size</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% history.forEach(run => { %>
+                <tr class="history-row" data-job-id="<%= run.jobId %>" data-status="<%= run.status %>" data-job-name="<%= (run.jobName || '').toLowerCase() %>">
+                  <td>
+                    <div class="history-job-cell">
+                      <a href="/execution/<%= run.id %>" class="font-semibold text-truncate"><%= run.jobName %></a>
+                      <div class="history-badges-row">
+                        <% if (run.isDryRun) { %>
+                          <span class="badge badge-info badge-xs">DRY RUN</span>
+                        <% } %>
+                        <span class="text-xs text-muted mono-font">ID: <%= run.id.substring(0, 16) %>...</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="text-sm"><%= fileUtils.formatDate(run.startedAt) %></span>
+                  </td>
+                  <td>
+                    <span class="text-sm mono-font"><%= fileUtils.formatDuration(run.durationMs) %></span>
+                  </td>
+                  <td>
+                    <span class="badge badge-<%= run.status === 'success' ? 'success' : (run.status === 'partial' ? 'warning' : (run.status === 'stopped' ? 'subtle' : 'danger')) %>">
+                      <%= run.status.toUpperCase() %>
+                    </span>
+                  </td>
+                  <td>
+                    <span class="text-sm mono-font"><%= run.stats ? run.stats.copied : 0 %> / <%= run.stats ? run.stats.processed : 0 %></span>
+                    <% if (run.stats && run.stats.failed > 0) { %>
+                      <span class="badge badge-danger badge-xs"><%= run.stats.failed %> failed</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <span class="text-sm mono-font"><%= fileUtils.formatBytes(run.stats ? run.stats.bytes : 0) %></span>
+                  </td>
+                  <td class="text-right">
+                    <div class="btn-group">
+                      <a href="/execution/<%= run.id %>" class="btn btn-ghost btn-sm" title="View execution monitor">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <span>View</span>
+                      </a>
+                      <a href="/history/<%= run.id %>" class="btn btn-ghost btn-sm btn-icon-only" title="Full Breakdown">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="9 18 15 12 9 6"/></svg>
+                      </a>
+                      <a href="/api/execution/history/<%= run.id %>/raw-log" target="_blank" class="btn btn-ghost btn-sm btn-icon-only" title="Download Log File">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                      </a>
+                      <button type="button" class="btn btn-ghost btn-sm btn-icon-only text-danger btn-delete-history" data-run-id="<%= run.id %>" title="Delete record">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+<script src="/js/history.js"></script>
+<%- include('partials/footer') %>

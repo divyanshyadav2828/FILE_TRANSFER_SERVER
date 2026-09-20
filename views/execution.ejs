@@ -1,0 +1,198 @@
+<%- include('partials/header') %>
+
+<div class="execution-page-container" data-run-id="<%= runData.id %>" data-is-active="<%= isActive ? 'true' : 'false' %>">
+  <!-- Execution Status Header Card -->
+  <div class="card mb-4 execution-hero-card">
+    <div class="card-body">
+      <div class="execution-header-row">
+        <div class="execution-title-meta">
+          <div class="execution-badges-bar">
+            <span class="badge" id="executionStatusBadge">
+              <%= runData.status.toUpperCase() %>
+            </span>
+            <% if (runData.isDryRun) { %>
+              <span class="badge badge-info">DRY RUN PREVIEW</span>
+            <% } %>
+            <span class="text-xs text-muted mono-font">Run ID: <%= runData.id %></span>
+          </div>
+          <h2 class="execution-job-name" id="executionJobName"><%= runData.jobName %></h2>
+        </div>
+
+        <div class="execution-header-actions">
+          <button type="button" class="btn btn-danger" id="stopExecutionBtn" style="<%= isActive ? '' : 'display:none;' %>">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><rect width="14" height="14" x="5" y="5" rx="2"/></svg>
+            <span>Stop Execution</span>
+          </button>
+          <a href="/history/<%= runData.id %>" class="btn btn-secondary btn-sm" id="viewHistoryDetailBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Run Details</span>
+          </a>
+          <a href="/api/execution/history/<%= runData.id %>/raw-log" target="_blank" class="btn btn-ghost btn-sm" title="Download raw log text file">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Log File</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Active Step Indicator -->
+      <div class="active-step-bar" id="activeStepBar">
+        <div class="step-badge-indicator" id="stepBadgeIndicator">
+          Step <span id="currentStepNum"><%= (runData.currentStep && runData.currentStep.stepIndex) || 1 %></span> of <span id="totalStepsNum"><%= runData.totalSteps || 1 %></span>
+        </div>
+        <div class="step-path-flow mono-font text-truncate" id="stepPathFlow">
+          <% if (runData.currentStep) { %>
+            <span class="source-tag"><%= runData.currentStep.source %></span>
+            <span class="arrow-tag">→</span>
+            <span class="dest-tag"><%= runData.currentStep.destination %></span>
+            <span class="badge badge-subtle badge-xs"><%= runData.currentStep.operation.toUpperCase() %></span>
+          <% } else { %>
+            <span>Preparing execution transfer pipeline...</span>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Animated Progress Bar & Percentage -->
+      <div class="progress-section">
+        <div class="progress-meta">
+          <span class="current-file-label text-truncate" id="currentFileLabel">
+            <span class="text-muted">Current:</span> <span class="mono-font" id="currentFileName">Scanning files...</span>
+          </span>
+          <span class="progress-percentage-label" id="progressPercentageLabel">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real-time Live Stats Grid -->
+  <div class="execution-stats-grid mb-4">
+    <div class="stat-card">
+      <div class="stat-icon stat-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value mono-font" id="statProcessed"><%= runData.stats ? runData.stats.processed : 0 %></div>
+        <div class="stat-label">Processed</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value mono-font" id="statCopied"><%= runData.stats ? (runData.stats.copied + (runData.stats.replaced || 0)) : 0 %></div>
+        <div class="stat-label">Copied / Replaced</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value mono-font" id="statSkipped"><%= runData.stats ? runData.stats.skipped : 0 %></div>
+        <div class="stat-label">Skipped / Excluded</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value mono-font" id="statFailed"><%= runData.stats ? runData.stats.failed : 0 %></div>
+        <div class="stat-label">Failed</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value mono-font" id="statBytes"><%= fileUtils.formatBytes(runData.stats ? runData.stats.bytes : 0) %></div>
+        <div class="stat-label">Data Transferred</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value mono-font" id="statDuration"><%= fileUtils.formatDuration(runData.durationMs) %></div>
+        <div class="stat-label">Duration</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Live Streaming Event Log Card -->
+  <div class="card log-card">
+    <div class="card-header log-header">
+      <div class="log-header-left">
+        <div class="terminal-dots">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-yellow"></span>
+          <span class="dot dot-green"></span>
+        </div>
+        <h3 class="log-title">Live Execution Stream</h3>
+      </div>
+
+      <div class="log-header-controls">
+        <div class="log-filters">
+          <button type="button" class="log-filter-btn active" data-filter="all">All</button>
+          <button type="button" class="log-filter-btn" data-filter="success">✓ Copied</button>
+          <button type="button" class="log-filter-btn" data-filter="skip">⊘ Skipped</button>
+          <button type="button" class="log-filter-btn" data-filter="error">✗ Errors</button>
+        </div>
+
+        <label class="autoscroll-toggle">
+          <input type="checkbox" id="autoScrollCheckbox" checked />
+          <span>Auto-scroll</span>
+        </label>
+
+        <button type="button" class="btn btn-ghost btn-xs btn-icon-only" id="clearLogViewBtn" title="Clear log window">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7c-1 0-2-1-2-2V6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="card-body p-0">
+      <div class="terminal-log-container" id="terminalLogContainer">
+        <!-- Log entries stream here -->
+        <div class="terminal-log-placeholder" id="terminalPlaceholder">
+          <span class="spinner-sm"></span>
+          <span>Connecting to live execution stream...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completion Summary Banner (appears when finished) -->
+  <div id="completionBanner" class="completion-banner card mt-4" style="display: none;">
+    <div class="card-body">
+      <div class="completion-banner-content">
+        <div class="completion-icon-wrapper" id="completionIconWrapper">
+          <!-- Populated by JS -->
+        </div>
+        <div class="completion-text-wrapper">
+          <h3 id="completionTitle">Transfer Job Finished</h3>
+          <p id="completionMessage" class="text-muted"></p>
+        </div>
+        <div class="completion-actions">
+          <a href="/history/<%= runData.id %>" class="btn btn-primary">View Full History & Details</a>
+          <a href="/" class="btn btn-secondary">Return to Dashboard</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.CURRENT_RUN_DATA = <%- JSON.stringify(runData || {}) %>;
+</script>
+<script src="/js/execution.js"></script>
+<%- include('partials/footer') %>

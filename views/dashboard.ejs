@@ -1,0 +1,207 @@
+<%- include('partials/header') %>
+
+<div class="dashboard-container">
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon stat-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value"><%= stats.totalJobs %></div>
+        <div class="stat-label">Configured Jobs</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-running">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value" id="dashboardRunningCount"><%= stats.runningJobs %></div>
+        <div class="stat-label">Currently Running</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value"><%= stats.successfulRuns %></div>
+        <div class="stat-label">Successful Runs</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value"><%= fileUtils.formatBytes(stats.totalBytesTransferred) %></div>
+        <div class="stat-label">Data Transferred</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-layout-columns">
+    <!-- Saved Jobs Section -->
+    <div class="dashboard-main-col">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+            <h2>Configured Transfer Jobs</h2>
+          </div>
+          <div class="card-header-actions">
+            <a href="/jobs" class="btn btn-ghost btn-sm">View All (<%= recentJobs.length %>)</a>
+            <a href="/jobs/create" class="btn btn-primary btn-sm">+ New Job</a>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <% if (recentJobs.length === 0) { %>
+            <div class="empty-state">
+              <div class="empty-state-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+              </div>
+              <h3>No Transfer Jobs Configured</h3>
+              <p>Create your first automated file transfer job between folders or drives.</p>
+              <a href="/jobs/create" class="btn btn-primary">Create Your First Job</a>
+            </div>
+          <% } else { %>
+            <div class="table-responsive">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Job Name</th>
+                    <th>Steps</th>
+                    <th>Conflict Policy</th>
+                    <th>Last Run</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% recentJobs.forEach(job => { %>
+                    <tr>
+                      <td>
+                        <div class="job-title-cell">
+                          <a href="/jobs/<%= job.id %>" class="job-name-link font-semibold"><%= job.name %></a>
+                          <% if (job.description) { %>
+                            <span class="job-desc-text text-muted"><%= job.description %></span>
+                          <% } %>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="badge badge-subtle">
+                          <%= job.steps.length %> Step<%= job.steps.length > 1 ? 's' : '' %>
+                        </span>
+                      </td>
+                      <td>
+                        <span class="badge badge-outline"><%= job.conflictResolution || 'replace_if_newer' %></span>
+                      </td>
+                      <td>
+                        <span class="text-sm text-muted"><%= fileUtils.formatDate(job.lastRunAt) %></span>
+                      </td>
+                      <td class="text-right">
+                        <div class="btn-group">
+                          <button type="button" class="btn btn-primary btn-sm btn-run-job" data-job-id="<%= job.id %>" data-job-name="<%= job.name %>" title="Start transfer job now">
+                            <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            <span>Run</span>
+                          </button>
+                          <button type="button" class="btn btn-secondary btn-sm btn-dry-run-job" data-job-id="<%= job.id %>" data-job-name="<%= job.name %>" title="Simulate without modifying files">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <span>Dry Run</span>
+                          </button>
+                          <a href="/jobs/<%= job.id %>/edit" class="btn btn-ghost btn-sm btn-icon-only" title="Edit Job">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Right Column: Recent Activity & Quick Locations -->
+    <div class="dashboard-side-col">
+      <!-- Recent Activity Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <h3>Recent Executions</h3>
+          </div>
+          <a href="/history" class="btn btn-ghost btn-sm">History</a>
+        </div>
+        <div class="card-body p-0">
+          <% if (recentActivity.length === 0) { %>
+            <div class="empty-state-sm">
+              <p class="text-muted">No recent executions recorded yet.</p>
+            </div>
+          <% } else { %>
+            <div class="activity-feed">
+              <% recentActivity.forEach(activity => { %>
+                <a href="/execution/<%= activity.id %>" class="activity-item">
+                  <div class="activity-status-indicator status-<%= activity.status %>">
+                    <% if (activity.status === 'success') { %>✓
+                    <% } else if (activity.status === 'partial') { %>⚠
+                    <% } else if (activity.status === 'failed') { %>✗
+                    <% } else if (activity.status === 'stopped') { %>⏹
+                    <% } else { %>⋯<% } %>
+                  </div>
+                  <div class="activity-content">
+                    <div class="activity-title font-semibold text-truncate">
+                      <%= activity.jobName %>
+                      <% if (activity.isDryRun) { %><span class="badge badge-info badge-xs">DRY RUN</span><% } %>
+                    </div>
+                    <div class="activity-meta text-xs text-muted">
+                      <span><%= fileUtils.formatDate(activity.startedAt) %></span> • 
+                      <span><%= activity.stats.copied %> copied</span> • 
+                      <span><%= fileUtils.formatBytes(activity.stats.bytes) %></span>
+                    </div>
+                  </div>
+                </a>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Quick Saved Locations Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-header-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            <h3>Saved Locations</h3>
+          </div>
+          <a href="/locations" class="btn btn-ghost btn-sm">Manage</a>
+        </div>
+        <div class="card-body p-0">
+          <% if (locations.length === 0) { %>
+            <div class="empty-state-sm">
+              <p class="text-muted">No saved locations yet.</p>
+            </div>
+          <% } else { %>
+            <div class="quick-locations-list">
+              <% locations.slice(0, 4).forEach(loc => { %>
+                <div class="quick-location-item">
+                  <div class="quick-loc-name font-semibold"><%= loc.name %></div>
+                  <div class="quick-loc-path mono-font text-truncate" title="<%= loc.path %>"><%= loc.path %></div>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/dashboard.js"></script>
+<%- include('partials/footer') %>

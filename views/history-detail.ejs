@@ -1,0 +1,215 @@
+<%- include('partials/header') %>
+
+<div class="history-detail-page">
+  <!-- Run Overview Card -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="history-header-flex">
+        <div>
+          <div class="execution-badges-bar mb-2">
+            <span class="badge badge-<%= runData.status === 'success' ? 'success' : (runData.status === 'partial' ? 'warning' : 'danger') %>">
+              <%= runData.status.toUpperCase() %>
+            </span>
+            <% if (runData.isDryRun) { %>
+              <span class="badge badge-info">DRY RUN PREVIEW</span>
+            <% } %>
+            <span class="text-xs text-muted mono-font">Run ID: <%= runData.id %></span>
+          </div>
+          <h2 class="history-detail-title"><%= runData.jobName %></h2>
+          <div class="text-sm text-muted">
+            <span>Started: <%= fileUtils.formatDate(runData.startedAt) %></span> • 
+            <span>Finished: <%= fileUtils.formatDate(runData.finishedAt) %></span> • 
+            <span>Duration: <strong class="mono-font"><%= fileUtils.formatDuration(runData.durationMs) %></strong></span>
+          </div>
+        </div>
+
+        <div class="history-header-actions">
+          <a href="/api/execution/history/<%= runData.id %>/raw-log" target="_blank" class="btn btn-secondary btn-sm">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span>Download Raw Log</span>
+          </a>
+          <a href="/jobs/<%= runData.jobId %>" class="btn btn-ghost btn-sm">View Job Config</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid mb-4">
+    <div class="stat-card">
+      <div class="stat-icon stat-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value mono-font"><%= runData.stats ? runData.stats.processed : 0 %></div>
+        <div class="stat-label">Files Processed</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-success">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value mono-font"><%= runData.stats ? runData.stats.copied : 0 %></div>
+        <div class="stat-label">Files Copied</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value mono-font"><%= runData.stats ? runData.stats.skipped : 0 %></div>
+        <div class="stat-label">Files Skipped</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value mono-font"><%= runData.stats ? runData.stats.failed : 0 %></div>
+        <div class="stat-label">Files Failed</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon stat-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <div class="stat-content">
+        <div class="stat-value mono-font"><%= fileUtils.formatBytes(runData.stats ? runData.stats.bytes : 0) %></div>
+        <div class="stat-label">Total Data</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step Breakdown Card -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <div class="card-header-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        <h3>Transfer Steps Execution Summary</h3>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <% if (!runData.stepResults || runData.stepResults.length === 0) { %>
+        <div class="p-4 text-muted text-center">No detailed step results available for this run.</div>
+      <% } else { %>
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Step #</th>
+                <th>Operation</th>
+                <th>Source → Destination</th>
+                <th>Copied</th>
+                <th>Skipped</th>
+                <th>Failed</th>
+                <th>Data</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% runData.stepResults.forEach(res => { %>
+                <tr>
+                  <td><span class="badge badge-subtle">Step <%= res.stepIndex %></span></td>
+                  <td>
+                    <span class="badge badge-<%= res.operation === 'move' ? 'warning' : 'primary' %> badge-xs">
+                      <%= res.operation.toUpperCase() %>
+                    </span>
+                  </td>
+                  <td>
+                    <div class="mono-font text-xs">
+                      <div><strong class="text-muted">FROM:</strong> <%= res.source %></div>
+                      <div><strong class="text-muted">TO:</strong> <%= res.destination %></div>
+                    </div>
+                  </td>
+                  <td class="mono-font"><%= res.stats ? res.stats.copied : 0 %></td>
+                  <td class="mono-font"><%= res.stats ? res.stats.skipped : 0 %></td>
+                  <td class="mono-font <%= (res.stats && res.stats.failed > 0) ? 'text-danger font-semibold' : '' %>">
+                    <%= res.stats ? res.stats.failed : 0 %>
+                  </td>
+                  <td class="mono-font"><%= fileUtils.formatBytes(res.stats ? res.stats.bytesTransferred : 0) %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  </div>
+
+  <!-- Errors List (If any) -->
+  <% if (runData.errors && runData.errors.length > 0) { %>
+    <div class="card mb-4 border-danger">
+      <div class="card-header bg-danger-subtle">
+        <div class="card-header-title text-danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <h3>Encountered Errors (<%= runData.errors.length %>)</h3>
+        </div>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>File / Component</th>
+                <th>Error Message</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% runData.errors.forEach(err => { %>
+                <tr>
+                  <td class="mono-font text-danger"><%= err.file %></td>
+                  <td class="text-sm"><%= err.error %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- Embedded Raw Execution Log -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-header-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+        <h3>Recorded Execution Log</h3>
+      </div>
+      <div class="card-header-actions">
+        <button type="button" class="btn btn-ghost btn-sm" id="copyLogTextBtn">Copy Log</button>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      <div class="raw-log-viewer mono-font" id="rawLogViewer">
+        Loading execution log...
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Fetch and display raw log text
+  fetch('/api/execution/history/<%= runData.id %>/raw-log')
+    .then(res => res.text())
+    .then(text => {
+      document.getElementById('rawLogViewer').textContent = text || 'Log file is empty.';
+    })
+    .catch(err => {
+      document.getElementById('rawLogViewer').textContent = 'Failed loading log: ' + err.message;
+    });
+
+  document.getElementById('copyLogTextBtn')?.addEventListener('click', () => {
+    const text = document.getElementById('rawLogViewer').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      window.showToast('Execution log copied to clipboard!', 'success');
+    });
+  });
+</script>
+
+<%- include('partials/footer') %>

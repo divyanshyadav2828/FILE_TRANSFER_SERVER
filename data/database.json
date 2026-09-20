@@ -1,0 +1,422 @@
+{
+  "settings": {
+    "version": 1,
+    "defaultConflict": "replace_if_newer",
+    "defaultOperation": "copy",
+    "maxConcurrency": 4,
+    "logLevel": "info",
+    "theme": "dark",
+    "confirmMove": true
+  },
+  "locations": [
+    {
+      "id": "loc_desktop",
+      "name": "Desktop Folder",
+      "path": "C:\\Users\\IS\\Desktop",
+      "description": "Windows Desktop Directory",
+      "createdAt": "2026-08-31T10:00:00.000Z"
+    },
+    {
+      "id": "loc_downloads",
+      "name": "Downloads Folder",
+      "path": "C:\\Users\\IS\\Downloads",
+      "description": "Windows Downloads Directory",
+      "createdAt": "2026-08-31T10:00:00.000Z"
+    },
+    {
+      "id": "loc_docs",
+      "name": "Documents Folder",
+      "path": "C:\\Users\\IS\\Documents",
+      "description": "Windows User Documents Directory",
+      "createdAt": "2026-08-31T10:00:00.000Z"
+    }
+  ],
+  "jobs": [
+    {
+      "id": "job_1788171759126_s6dfz",
+      "name": "SKONEXA LANDING PAGE",
+      "description": "",
+      "steps": [
+        {
+          "id": "step_1_1788171623426",
+          "source": "C:\\Users\\IS\\Desktop\\skonexa\\Skonexa\\landing_page",
+          "destination": "Y:\\SKONEXA_LANDING_30-08-2026",
+          "operation": "copy",
+          "exclude": [
+            "node_modules",
+            ".git",
+            "*.log",
+            ".env",
+            "temp",
+            "Thumbs.db",
+            "build",
+            "*.tmp",
+            "dist"
+          ]
+        }
+      ],
+      "conflictResolution": "replace",
+      "status": "idle",
+      "lastRunAt": "2026-08-31T10:24:53.089Z",
+      "createdAt": "2026-08-31T10:22:39.126Z",
+      "updatedAt": "2026-08-31T10:25:05.716Z"
+    },
+    {
+      "id": "job_1788434701768_15rre",
+      "name": "SKONEXA CANVAS",
+      "description": "",
+      "steps": [
+        {
+          "id": "step_1_1788434630260",
+          "source": "C:\\Users\\IS\\Desktop\\skonexa\\canvas",
+          "destination": "Y:\\SKONEXA_CANVAS_03-09-2026",
+          "operation": "copy",
+          "exclude": [
+            "node_modules",
+            ".git",
+            "*.log",
+            "*.tmp",
+            "temp",
+            "Thumbs.db",
+            "build",
+            "dist"
+          ]
+        }
+      ],
+      "conflictResolution": "replace",
+      "status": "idle",
+      "lastRunAt": "2026-09-03T11:26:27.499Z",
+      "createdAt": "2026-09-03T11:25:01.768Z",
+      "updatedAt": "2026-09-03T11:26:47.237Z"
+    },
+    {
+      "id": "job_1789884688612_c5dxh",
+      "name": "BACKUP_LINUX",
+      "description": "",
+      "steps": [
+        {
+          "id": "step_1_1789884568251",
+          "source": "C:\\Users\\IS\\Desktop",
+          "destination": "C:\\Users\\IS\\Documents\\Backup_linux",
+          "operation": "copy",
+          "exclude": [
+            "node_modules",
+            "*.log",
+            "*.tmp",
+            "Thumbs.db",
+            "build",
+            "temp",
+            "dist"
+          ]
+        }
+      ],
+      "conflictResolution": "replace_if_newer",
+      "status": "idle",
+      "lastRunAt": "2026-09-20T06:11:31.085Z",
+      "createdAt": "2026-09-20T06:11:28.612Z",
+      "updatedAt": "2026-09-20T06:13:41.890Z"
+    }
+  ],
+  "history": [
+    {
+      "id": "run_1789884691085_ntn62",
+      "jobId": "job_1789884688612_c5dxh",
+      "jobName": "BACKUP_LINUX",
+      "isDryRun": false,
+      "startedAt": "2026-09-20T06:11:31.085Z",
+      "finishedAt": "2026-09-20T06:13:41.888Z",
+      "durationMs": 130777,
+      "status": "success",
+      "steps": [],
+      "stats": {
+        "processed": 13103,
+        "copied": 12970,
+        "skipped": 133,
+        "replaced": 0,
+        "failed": 0,
+        "bytes": 11581006488
+      },
+      "errors": [],
+      "currentStepIndex": 0,
+      "totalSteps": 1,
+      "currentStep": {
+        "stepIndex": 1,
+        "totalSteps": 1,
+        "source": "C:\\Users\\IS\\Desktop",
+        "destination": "C:\\Users\\IS\\Documents\\Backup_linux",
+        "operation": "copy",
+        "exclude": [
+          "node_modules",
+          "*.log",
+          "*.tmp",
+          "Thumbs.db",
+          "build",
+          "temp",
+          "dist"
+        ]
+      },
+      "conflictResolution": "replace_if_newer",
+      "stepResults": [
+        {
+          "stepIndex": 1,
+          "source": "C:\\Users\\IS\\Desktop",
+          "destination": "C:\\Users\\IS\\Documents\\Backup_linux",
+          "operation": "copy",
+          "stats": {
+            "totalFound": 16085,
+            "processed": 13103,
+            "copied": 12970,
+            "skipped": 133,
+            "replaced": 0,
+            "failed": 0,
+            "bytesTransferred": 11581006488,
+            "totalBytes": 11581006488
+          },
+          "errors": [],
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "id": "run_1788434787499_0rt6v",
+      "jobId": "job_1788434701768_15rre",
+      "jobName": "SKONEXA CANVAS",
+      "isDryRun": false,
+      "startedAt": "2026-09-03T11:26:27.499Z",
+      "finishedAt": "2026-09-03T11:26:47.236Z",
+      "durationMs": 19723,
+      "status": "success",
+      "steps": [],
+      "stats": {
+        "processed": 296,
+        "copied": 291,
+        "skipped": 5,
+        "replaced": 0,
+        "failed": 0,
+        "bytes": 10664570
+      },
+      "errors": [],
+      "currentStepIndex": 0,
+      "totalSteps": 1,
+      "currentStep": {
+        "stepIndex": 1,
+        "totalSteps": 1,
+        "source": "C:\\Users\\IS\\Desktop\\skonexa\\canvas",
+        "destination": "Y:\\SKONEXA_CANVAS_03-09-2026",
+        "operation": "copy",
+        "exclude": [
+          "node_modules",
+          ".git",
+          "*.log",
+          "*.tmp",
+          "temp",
+          "Thumbs.db",
+          "build",
+          "dist"
+        ]
+      },
+      "conflictResolution": "replace",
+      "stepResults": [
+        {
+          "stepIndex": 1,
+          "source": "C:\\Users\\IS\\Desktop\\skonexa\\canvas",
+          "destination": "Y:\\SKONEXA_CANVAS_03-09-2026",
+          "operation": "copy",
+          "stats": {
+            "totalFound": 326,
+            "processed": 296,
+            "copied": 291,
+            "skipped": 5,
+            "replaced": 0,
+            "failed": 0,
+            "bytesTransferred": 10664570,
+            "totalBytes": 10664570
+          },
+          "errors": [],
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "id": "run_1788434704030_8s6r3",
+      "jobId": "job_1788434701768_15rre",
+      "jobName": "SKONEXA CANVAS",
+      "isDryRun": false,
+      "startedAt": "2026-09-03T11:25:04.030Z",
+      "finishedAt": "2026-09-03T11:25:19.879Z",
+      "durationMs": 15836,
+      "status": "stopped",
+      "steps": [],
+      "stats": {
+        "processed": 359,
+        "copied": 205,
+        "skipped": 154,
+        "replaced": 0,
+        "failed": 0,
+        "bytes": 12253763
+      },
+      "errors": [],
+      "currentStepIndex": 0,
+      "totalSteps": 1,
+      "currentStep": {
+        "stepIndex": 1,
+        "totalSteps": 1,
+        "source": "C:\\Users\\IS\\Desktop",
+        "destination": "Y:\\SKONEXA_CANVAS_03-09-2026",
+        "operation": "copy",
+        "exclude": [
+          "node_modules",
+          ".git",
+          "*.log",
+          "*.tmp",
+          "temp",
+          "Thumbs.db",
+          "build",
+          "dist"
+        ]
+      },
+      "conflictResolution": "replace",
+      "stepResults": [
+        {
+          "stepIndex": 1,
+          "source": "C:\\Users\\IS\\Desktop",
+          "destination": "Y:\\SKONEXA_CANVAS_03-09-2026",
+          "operation": "copy",
+          "stats": {
+            "totalFound": 7969,
+            "processed": 359,
+            "copied": 205,
+            "skipped": 154,
+            "replaced": 0,
+            "failed": 0,
+            "bytesTransferred": 12253763,
+            "totalBytes": 11098001953
+          },
+          "errors": [],
+          "aborted": true
+        }
+      ]
+    },
+    {
+      "id": "run_1788171893089_cfsx0",
+      "jobId": "job_1788171759126_s6dfz",
+      "jobName": "SKONEXA LANDING PAGE",
+      "isDryRun": false,
+      "startedAt": "2026-08-31T10:24:53.089Z",
+      "finishedAt": "2026-08-31T10:25:05.714Z",
+      "durationMs": 12611,
+      "status": "success",
+      "steps": [],
+      "stats": {
+        "processed": 153,
+        "copied": 145,
+        "skipped": 8,
+        "replaced": 0,
+        "failed": 0,
+        "bytes": 66999719
+      },
+      "errors": [],
+      "currentStepIndex": 0,
+      "totalSteps": 1,
+      "currentStep": {
+        "stepIndex": 1,
+        "totalSteps": 1,
+        "source": "C:\\Users\\IS\\Desktop\\skonexa\\Skonexa\\landing_page",
+        "destination": "Y:\\SKONEXA_LANDING_30-08-2026",
+        "operation": "copy",
+        "exclude": [
+          "node_modules",
+          ".git",
+          "*.log",
+          ".env",
+          "temp",
+          "Thumbs.db",
+          "build",
+          "*.tmp",
+          "dist"
+        ]
+      },
+      "conflictResolution": "replace",
+      "stepResults": [
+        {
+          "stepIndex": 1,
+          "source": "C:\\Users\\IS\\Desktop\\skonexa\\Skonexa\\landing_page",
+          "destination": "Y:\\SKONEXA_LANDING_30-08-2026",
+          "operation": "copy",
+          "stats": {
+            "totalFound": 172,
+            "processed": 153,
+            "copied": 145,
+            "skipped": 8,
+            "replaced": 0,
+            "failed": 0,
+            "bytesTransferred": 66999719,
+            "totalBytes": 66999719
+          },
+          "errors": [],
+          "aborted": false
+        }
+      ]
+    },
+    {
+      "id": "run_1788171767594_k3kd9",
+      "jobId": "job_1788171759126_s6dfz",
+      "jobName": "SKONEXA LANDING PAGE",
+      "isDryRun": false,
+      "startedAt": "2026-08-31T10:22:47.594Z",
+      "finishedAt": "2026-08-31T10:23:01.899Z",
+      "durationMs": 14298,
+      "status": "success",
+      "steps": [],
+      "stats": {
+        "processed": 246,
+        "copied": 225,
+        "skipped": 8,
+        "replaced": 0,
+        "failed": 0,
+        "bytes": 93894852
+      },
+      "errors": [],
+      "currentStepIndex": 0,
+      "totalSteps": 1,
+      "currentStep": {
+        "stepIndex": 1,
+        "totalSteps": 1,
+        "source": "C:\\Users\\IS\\Desktop\\skonexa\\Skonexa\\landing_page",
+        "destination": "Y:\\SKONEXA_LANDING_30-08-2026",
+        "operation": "copy",
+        "exclude": [
+          "node_modules",
+          ".git",
+          "*.log",
+          ".env",
+          "temp",
+          "Thumbs.db",
+          "build",
+          "*.tmp"
+        ]
+      },
+      "conflictResolution": "replace",
+      "stepResults": [
+        {
+          "stepIndex": 1,
+          "source": "C:\\Users\\IS\\Desktop\\skonexa\\Skonexa\\landing_page",
+          "destination": "Y:\\SKONEXA_LANDING_30-08-2026",
+          "operation": "copy",
+          "stats": {
+            "totalFound": 270,
+            "processed": 246,
+            "copied": 225,
+            "skipped": 8,
+            "replaced": 13,
+            "failed": 0,
+            "bytesTransferred": 93894852,
+            "totalBytes": 93894852
+          },
+          "errors": [],
+          "aborted": false
+        }
+      ]
+    }
+  ]
+}

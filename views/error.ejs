@@ -1,0 +1,13 @@
+<%- include('layout', { body: `
+<div class="error-page-card card">
+  <div class="error-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  </div>
+  <h2>An Error Occurred</h2>
+  <p class="error-message mono-font">${error || 'Unknown error occurred.'}</p>
+  <div class="error-actions">
+    <a href="/" class="btn btn-primary">Return to Dashboard</a>
+    <a href="javascript:history.back()" class="btn btn-secondary">Go Back</a>
+  </div>
+</div>
+` }) %>

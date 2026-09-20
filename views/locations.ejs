@@ -1,0 +1,207 @@
+<%- include('partials/header') %>
+
+<div class="locations-page">
+  <div class="page-header-actions">
+    <div>
+      <p class="text-muted">Save frequently used folders and drive paths for quick selection when creating transfer jobs.</p>
+    </div>
+    <button type="button" class="btn btn-primary" id="openAddLocationModalBtn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span>Add Location</span>
+    </button>
+  </div>
+
+  <div class="locations-grid">
+    <% if (locations.length === 0) { %>
+      <div class="card col-12">
+        <div class="card-body">
+          <div class="empty-state">
+            <div class="empty-state-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <h3>No Saved Locations</h3>
+            <p>Save frequently accessed directories or backup drives for one-click job configuration.</p>
+            <button type="button" class="btn btn-primary" id="openAddLocationEmptyBtn">Add Your First Location</button>
+          </div>
+        </div>
+      </div>
+    <% } else { %>
+      <% locations.forEach(loc => { %>
+        <div class="location-card card" id="locCard-<%= loc.id %>">
+          <div class="card-header">
+            <div class="location-title-group">
+              <span class="location-status-badge badge <%= loc.exists ? 'badge-success' : 'badge-danger' %>">
+                <%= loc.exists ? 'Accessible ✓' : 'Path Not Found ✗' %>
+              </span>
+              <h3 class="location-name"><%= loc.name %></h3>
+            </div>
+            <div class="dropdown">
+              <button type="button" class="btn btn-ghost btn-sm btn-icon-only dropdown-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+              </button>
+              <div class="dropdown-menu dropdown-menu-right">
+                <button type="button" class="dropdown-item btn-edit-loc" data-id="<%= loc.id %>" data-name="<%= loc.name %>" data-path="<%= loc.path %>" data-desc="<%= loc.description || '' %>">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                  <span>Edit Location</span>
+                </button>
+                <div class="dropdown-divider"></div>
+                <button type="button" class="dropdown-item text-danger btn-delete-loc" data-id="<%= loc.id %>" data-name="<%= loc.name %>">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                  <span>Delete</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-body">
+            <div class="location-path-box mono-font" title="<%= loc.path %>">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
+              <span class="text-truncate"><%= loc.path %></span>
+            </div>
+            <% if (loc.description) { %>
+              <p class="location-desc text-muted text-sm mt-2"><%= loc.description %></p>
+            <% } %>
+          </div>
+
+          <div class="card-footer text-xs text-muted">
+            <span>Added <%= fileUtils.formatDate(loc.createdAt) %></span>
+          </div>
+        </div>
+      <% }) %>
+    <% } %>
+  </div>
+</div>
+
+<!-- Add/Edit Location Modal -->
+<div id="locationModal" class="modal-backdrop" style="display: none;">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <form id="locationForm">
+        <input type="hidden" id="locFormId" name="id" value="" />
+        <div class="modal-header">
+          <h3 id="locationModalTitle">Add Saved Location</h3>
+          <button type="button" class="btn-close" onclick="closeLocationModal()">×</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="locFormName" class="form-label required">Location Label / Name</label>
+            <input type="text" id="locFormName" class="form-control" placeholder="e.g. Primary Drive, Backup Disk E, Documents" required />
+          </div>
+
+          <div class="form-group">
+            <label for="locFormPath" class="form-label required">Windows Directory Path</label>
+            <div class="input-with-action">
+              <input type="text" id="locFormPath" class="form-control mono-font" placeholder="C:\Users\..." required />
+              <button type="button" class="btn btn-secondary" id="locBrowseBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
+                <span>Browse</span>
+              </button>
+            </div>
+            <div id="locPathValidationMsg" class="path-validation-feedback"></div>
+          </div>
+
+          <div class="form-group mb-0">
+            <label for="locFormDesc" class="form-label">Description (Optional)</label>
+            <input type="text" id="locFormDesc" class="form-control" placeholder="Optional notes about this location" />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeLocationModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="locFormSubmitBtn">Save Location</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Saved locations JS logic
+  function openAddLocationModal() {
+    document.getElementById('locFormId').value = '';
+    document.getElementById('locFormName').value = '';
+    document.getElementById('locFormPath').value = '';
+    document.getElementById('locFormDesc').value = '';
+    document.getElementById('locationModalTitle').textContent = 'Add Saved Location';
+    document.getElementById('locationModal').style.display = 'flex';
+  }
+
+  function closeLocationModal() {
+    document.getElementById('locationModal').style.display = 'none';
+  }
+
+  document.getElementById('openAddLocationModalBtn')?.addEventListener('click', openAddLocationModal);
+  document.getElementById('openAddLocationEmptyBtn')?.addEventListener('click', openAddLocationModal);
+
+  document.getElementById('locBrowseBtn')?.addEventListener('click', () => {
+    const current = document.getElementById('locFormPath').value;
+    window.openFolderExplorer(current, (selectedPath) => {
+      document.getElementById('locFormPath').value = selectedPath;
+    });
+  });
+
+  document.querySelectorAll('.btn-edit-loc').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('locFormId').value = btn.dataset.id;
+      document.getElementById('locFormName').value = btn.dataset.name;
+      document.getElementById('locFormPath').value = btn.dataset.path;
+      document.getElementById('locFormDesc').value = btn.dataset.desc;
+      document.getElementById('locationModalTitle').textContent = 'Edit Saved Location';
+      document.getElementById('locationModal').style.display = 'flex';
+    });
+  });
+
+  document.querySelectorAll('.btn-delete-loc').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+      const name = btn.dataset.name;
+      window.showConfirmModal('Delete Location', `Are you sure you want to delete "${name}"?`, async () => {
+        try {
+          const res = await fetch(`/api/locations/${id}`, { method: 'DELETE' });
+          const data = await res.json();
+          if (data.success) {
+            window.showToast('Location deleted successfully.', 'success');
+            setTimeout(() => window.location.reload(), 600);
+          } else {
+            window.showToast(data.error || 'Failed to delete location', 'error');
+          }
+        } catch (err) {
+          window.showToast(err.message, 'error');
+        }
+      });
+    });
+  });
+
+  document.getElementById('locationForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('locFormId').value;
+    const name = document.getElementById('locFormName').value.trim();
+    const path = document.getElementById('locFormPath').value.trim();
+    const description = document.getElementById('locFormDesc').value.trim();
+
+    const payload = { name, path, description };
+    const method = id ? 'PUT' : 'POST';
+    const url = id ? `/api/locations/${id}` : '/api/locations';
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        closeLocationModal();
+        window.showToast('Location saved successfully!', 'success');
+        setTimeout(() => window.location.reload(), 600);
+      } else {
+        window.showToast(data.error || 'Failed to save location', 'error');
+      }
+    } catch (err) {
+      window.showToast(err.message, 'error');
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>

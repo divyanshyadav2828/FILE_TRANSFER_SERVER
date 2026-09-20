@@ -1,0 +1,141 @@
+<%- include('../partials/header') %>
+
+<div class="page-header-actions">
+  <div class="search-filter-bar">
+    <div class="search-input-wrapper">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="jobsSearchInput" class="form-control" placeholder="Search jobs by name or path..." />
+    </div>
+
+    <div class="filter-group">
+      <select id="jobsStatusFilter" class="form-control">
+        <option value="all">All Jobs</option>
+        <option value="has_runs">Previously Executed</option>
+        <option value="never_run">Never Executed</option>
+      </select>
+    </div>
+  </div>
+
+  <a href="/jobs/create" class="btn btn-primary">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span>Create Transfer Job</span>
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <% if (jobs.length === 0) { %>
+      <div class="empty-state">
+        <div class="empty-state-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+        </div>
+        <h3>No Transfer Jobs Yet</h3>
+        <p>Set up automated file and folder transfer jobs between directories or drives.</p>
+        <a href="/jobs/create" class="btn btn-primary">Create Your First Job</a>
+      </div>
+    <% } else { %>
+      <div class="table-responsive">
+        <table class="table" id="jobsTable">
+          <thead>
+            <tr>
+              <th>Job Name & Description</th>
+              <th>Transfer Steps</th>
+              <th>Exclusions</th>
+              <th>Conflict Mode</th>
+              <th>Last Executed</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% jobs.forEach(job => { %>
+              <tr class="job-row" data-job-name="<%= job.name.toLowerCase() %>" data-has-runs="<%= !!job.lastRunAt %>">
+                <td>
+                  <div class="job-info-cell">
+                    <a href="/jobs/<%= job.id %>" class="job-title-link font-semibold"><%= job.name %></a>
+                    <% if (job.description) { %>
+                      <p class="job-description-text text-muted"><%= job.description %></p>
+                    <% } %>
+                  </div>
+                </td>
+                <td>
+                  <div class="steps-preview-list">
+                    <% job.steps.forEach((step, idx) => { %>
+                      <div class="step-preview-tag">
+                        <span class="badge badge-<%= step.operation === 'move' ? 'warning' : 'primary' %> badge-xs">
+                          <%= step.operation ? step.operation.toUpperCase() : 'COPY' %>
+                        </span>
+                        <span class="step-path-text mono-font text-truncate" title="<%= step.source %> → <%= step.destination %>">
+                          <%= step.source %> → <%= step.destination %>
+                        </span>
+                      </div>
+                    <% }) %>
+                  </div>
+                </td>
+                <td>
+                  <% 
+                    let totalExclusions = job.steps.reduce((acc, s) => acc + (s.exclude ? s.exclude.length : 0), 0);
+                  %>
+                  <% if (totalExclusions > 0) { %>
+                    <span class="badge badge-subtle" title="<%= totalExclusions %> exclusion rules configured across steps">
+                      <%= totalExclusions %> rule<%= totalExclusions > 1 ? 's' : '' %>
+                    </span>
+                  <% } else { %>
+                    <span class="text-muted text-xs">None</span>
+                  <% } %>
+                </td>
+                <td>
+                  <span class="badge badge-outline"><%= job.conflictResolution || 'replace_if_newer' %></span>
+                </td>
+                <td>
+                  <span class="text-sm <%= job.lastRunAt ? 'text-primary-emphasis' : 'text-muted' %>">
+                    <%= fileUtils.formatDate(job.lastRunAt) %>
+                  </span>
+                </td>
+                <td class="text-right">
+                  <div class="btn-group">
+                    <button type="button" class="btn btn-primary btn-sm btn-run-job" data-job-id="<%= job.id %>" data-job-name="<%= job.name %>" title="Run Job Now">
+                      <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                      <span>Run</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-sm btn-dry-run-job" data-job-id="<%= job.id %>" data-job-name="<%= job.name %>" title="Dry Run Simulation">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                      <span>Dry Run</span>
+                    </button>
+                    
+                    <div class="dropdown">
+                      <button type="button" class="btn btn-ghost btn-sm btn-icon-only dropdown-toggle" title="More Actions">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                      </button>
+                      <div class="dropdown-menu dropdown-menu-right">
+                        <a href="/jobs/<%= job.id %>" class="dropdown-item">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                          <span>View Details</span>
+                        </a>
+                        <a href="/jobs/<%= job.id %>/edit" class="dropdown-item">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                          <span>Edit Configuration</span>
+                        </a>
+                        <button type="button" class="dropdown-item btn-duplicate-job" data-job-id="<%= job.id %>">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                          <span>Duplicate Job</span>
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button type="button" class="dropdown-item text-danger btn-delete-job" data-job-id="<%= job.id %>" data-job-name="<%= job.name %>">
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                          <span>Delete Job</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<script src="/js/jobsList.js"></script>
+<%- include('../partials/footer') %>

@@ -1,0 +1,155 @@
+<%- include('partials/header') %>
+
+<div class="settings-page">
+  <form id="settingsForm" class="settings-form">
+    <div class="card mb-4">
+      <div class="card-header">
+        <div class="card-header-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <h2>Transfer Engine & Conflict Defaults</h2>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="form-group">
+          <label class="form-label font-semibold">Default Duplicate File Handling</label>
+          <p class="text-sm text-muted mb-2">Configure how FileFlow resolves filename conflicts when a destination file already exists.</p>
+          <div class="radio-group-vertical">
+            <label class="radio-card <%= settings.defaultConflict === 'replace_if_newer' ? 'selected' : '' %>">
+              <input type="radio" name="defaultConflict" value="replace_if_newer" <%= settings.defaultConflict === 'replace_if_newer' ? 'checked' : '' %> />
+              <div class="radio-card-content">
+                <span class="radio-card-title">Replace only if source is newer (Recommended)</span>
+                <span class="radio-card-desc text-muted">Compares file modification timestamps and byte sizes. Only transfers modified or newer files.</span>
+              </div>
+            </label>
+
+            <label class="radio-card <%= settings.defaultConflict === 'replace' ? 'selected' : '' %>">
+              <input type="radio" name="defaultConflict" value="replace" <%= settings.defaultConflict === 'replace' ? 'checked' : '' %> />
+              <div class="radio-card-content">
+                <span class="radio-card-title">Always Replace / Overwrite</span>
+                <span class="radio-card-desc text-muted">Overwrites destination files regardless of modification timestamp.</span>
+              </div>
+            </label>
+
+            <label class="radio-card <%= settings.defaultConflict === 'skip' ? 'selected' : '' %>">
+              <input type="radio" name="defaultConflict" value="skip" <%= settings.defaultConflict === 'skip' ? 'checked' : '' %> />
+              <div class="radio-card-content">
+                <span class="radio-card-title">Skip Existing</span>
+                <span class="radio-card-desc text-muted">Never overwrites destination files if a file with the same name already exists.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row mt-4">
+          <div class="form-group col-6">
+            <label for="maxConcurrency" class="form-label font-semibold">Maximum Concurrent Transfers</label>
+            <p class="text-sm text-muted mb-2">Controls parallel streaming workers. Optimal for SSDs is 4 to 8.</p>
+            <input type="number" id="maxConcurrency" name="maxConcurrency" class="form-control" min="1" max="16" value="<%= settings.maxConcurrency || 4 %>" />
+          </div>
+
+          <div class="form-group col-6">
+            <label for="defaultOperation" class="form-label font-semibold">Default Transfer Operation</label>
+            <p class="text-sm text-muted mb-2">Pre-selected operation when creating a new transfer step.</p>
+            <select id="defaultOperation" name="defaultOperation" class="form-control">
+              <option value="copy" <%= settings.defaultOperation === 'copy' ? 'selected' : '' %>>Copy</option>
+              <option value="move" <%= settings.defaultOperation === 'move' ? 'selected' : '' %>>Move / Cut</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interface & Safety Settings Card -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <div class="card-header-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <h2>Safety & Visual Preferences</h2>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div class="form-group checkbox-toggle-group">
+          <label class="toggle-switch">
+            <input type="checkbox" id="confirmMove" name="confirmMove" <%= settings.confirmMove ? 'checked' : '' %> />
+            <span class="toggle-slider"></span>
+          </label>
+          <div class="toggle-label-content">
+            <span class="font-semibold">Confirm Move Operations</span>
+            <p class="text-sm text-muted">Display a confirmation prompt before running jobs that include destructive Move / Cut steps.</p>
+          </div>
+        </div>
+
+        <div class="form-row mt-4">
+          <div class="form-group col-6">
+            <label for="themeSelect" class="form-label font-semibold">Interface Theme</label>
+            <select id="themeSelect" name="theme" class="form-control">
+              <option value="dark" <%= settings.theme === 'dark' ? 'selected' : '' %>>Dark Mode (Slate / Indigo)</option>
+              <option value="light" <%= settings.theme === 'light' ? 'selected' : '' %>>Light Mode</option>
+            </select>
+          </div>
+
+          <div class="form-group col-6">
+            <label for="logLevel" class="form-label font-semibold">Application Log Level</label>
+            <select id="logLevel" name="logLevel" class="form-control">
+              <option value="info" <%= settings.logLevel === 'info' ? 'selected' : '' %>>Info</option>
+              <option value="warn" <%= settings.logLevel === 'warn' ? 'selected' : '' %>>Warning</option>
+              <option value="error" <%= settings.logLevel === 'error' ? 'selected' : '' %>>Error Only</option>
+              <option value="debug" <%= settings.logLevel === 'debug' ? 'selected' : '' %>>Debug (Verbose)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions-card card">
+      <div class="form-actions-right">
+        <button type="submit" class="btn btn-primary" id="saveSettingsBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          <span>Save Preferences</span>
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<script>
+  document.querySelectorAll('.radio-card input[type="radio"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
+      radio.closest('.radio-card').classList.add('selected');
+    });
+  });
+
+  document.getElementById('settingsForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const defaultConflict = document.querySelector('input[name="defaultConflict"]:checked')?.value || 'replace_if_newer';
+    const defaultOperation = document.getElementById('defaultOperation').value;
+    const maxConcurrency = parseInt(document.getElementById('maxConcurrency').value, 10) || 4;
+    const confirmMove = document.getElementById('confirmMove').checked;
+    const theme = document.getElementById('themeSelect').value;
+    const logLevel = document.getElementById('logLevel').value;
+
+    const payload = { defaultConflict, defaultOperation, maxConcurrency, confirmMove, theme, logLevel };
+
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        window.setTheme(theme);
+        window.showToast('Settings saved successfully!', 'success');
+      } else {
+        window.showToast(data.error || 'Failed to save settings', 'error');
+      }
+    } catch (err) {
+      window.showToast(err.message, 'error');
+    }
+  });
+</script>
+
+<%- include('partials/footer') %>
